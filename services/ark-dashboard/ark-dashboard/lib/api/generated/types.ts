@@ -361,6 +361,37 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ark-services/marketplace-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Marketplace Items
+         * @description List Helm releases for marketplace item detection.
+         *
+         *     Returns full Helm release data including chart metadata and annotations
+         *     for marketplace item detection via ark.mckinsey.com/marketplace-item-name.
+         *
+         *     Args:
+         *         namespace: The namespace to list Helm releases from (defaults to current context)
+         *
+         *     Returns:
+         *         HelmReleaseListResponse containing:
+         *         - items: List of Helm releases with chart metadata
+         *         - count: Number of releases found
+         */
+        get: operations["list_marketplace_items_v1_ark_services_marketplace_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ark-services/{service_name}": {
         parameters: {
             query?: never;
@@ -1318,6 +1349,7 @@ export interface paths {
          *         version: API version (e.g., 'v1')
          *         kind: Kubernetes Kind (e.g., 'Pod', 'Service', 'ConfigMap')
          *         namespace: The namespace (defaults to current context)
+         *         label_selector: Label selector for filtering resources (e.g., 'app.kubernetes.io/instance=phoenix')
          *
          *     Returns:
          *         Response: List of raw Kubernetes resources as JSON
@@ -1325,6 +1357,7 @@ export interface paths {
          *     Examples:
          *         - GET /v1/resources/api/v1/Pod
          *         - GET /v1/resources/api/v1/Service
+         *         - GET /v1/resources/api/v1/Service?labelSelector=app.kubernetes.io/instance=phoenix
          */
         get: operations["list_core_resources_v1_resources_api__version___kind__get"];
         put?: never;
@@ -1452,6 +1485,7 @@ export interface paths {
          *         version: API version (e.g., 'v1', 'v1alpha1')
          *         kind: Kubernetes Kind (e.g., 'Deployment', 'Job', 'WorkflowTemplate')
          *         namespace: The namespace (defaults to current context)
+         *         label_selector: Label selector for filtering resources (e.g., 'app.kubernetes.io/instance=phoenix')
          *         workflowName: Filter by workflow name (partial match, case insensitive)
          *         workflowTemplateName: Filter by workflow template name (partial match, case insensitive)
          *         status: Filter by workflow status
@@ -1464,6 +1498,7 @@ export interface paths {
          *         - GET /v1/resources/apis/batch/v1/Job
          *         - GET /v1/resources/apis/argoproj.io/v1alpha1/WorkflowTemplate
          *         - GET /v1/resources/apis/argoproj.io/v1alpha1/Workflow?workflowName=my-workflow&status=running
+         *         - GET /v1/resources/v1/Service?labelSelector=app.kubernetes.io/instance=phoenix
          */
         get: operations["list_grouped_resources_v1_resources_apis__group___version___kind__get"];
         put?: never;
@@ -2562,6 +2597,18 @@ export interface components {
             temperature?: string | null;
         };
         /**
+         * ChartMetadata
+         * @description Chart metadata from Helm release.
+         */
+        ChartMetadata: {
+            /** Annotations */
+            annotations?: {
+                [key: string]: string;
+            } | null;
+            /** Description */
+            description?: string | null;
+        };
+        /**
          * ChatCompletionAssistantMessageParam
          * @description Messages sent by the model in response to user messages.
          */
@@ -3023,6 +3070,42 @@ export interface components {
              * @example healthy
              */
             status: string;
+        };
+        /**
+         * HelmRelease
+         * @description Helm release information for marketplace item detection.
+         *
+         *     Represents a Helm release with chart metadata including annotations
+         *     used for marketplace item identification.
+         */
+        HelmRelease: {
+            /** App Version */
+            app_version: string;
+            /** Chart */
+            chart: string;
+            chart_metadata?: components["schemas"]["ChartMetadata"] | null;
+            /** Chart Version */
+            chart_version: string;
+            /** Name */
+            name: string;
+            /** Namespace */
+            namespace: string;
+            /** Revision */
+            revision: number;
+            /** Status */
+            status: string;
+            /** Updated */
+            updated: string;
+        };
+        /**
+         * HelmReleaseListResponse
+         * @description Response model for listing Helm releases.
+         */
+        HelmReleaseListResponse: {
+            /** Count */
+            count: number;
+            /** Items */
+            items: components["schemas"]["HelmRelease"][];
         };
         /** ImageURL */
         ImageURL: {
@@ -4591,6 +4674,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArkServiceListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_marketplace_items_v1_ark_services_marketplace_items_get: {
+        parameters: {
+            query?: {
+                /** @description Namespace for this request (defaults to current context) */
+                namespace?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HelmReleaseListResponse"];
                 };
             };
             /** @description Validation Error */
@@ -6632,6 +6747,8 @@ export interface operations {
             query?: {
                 /** @description Namespace for this request (defaults to current context) */
                 namespace?: string | null;
+                /** @description Label selector for filtering resources (e.g., app.kubernetes.io/instance=phoenix) */
+                labelSelector?: string | null;
             };
             header?: never;
             path: {
@@ -6818,6 +6935,8 @@ export interface operations {
             query?: {
                 /** @description Namespace for this request (defaults to current context) */
                 namespace?: string | null;
+                /** @description Label selector for filtering resources (e.g., app.kubernetes.io/instance=phoenix) */
+                labelSelector?: string | null;
                 /** @description Filter by workflow name (partial match, case insensitive) */
                 workflowName?: string | null;
                 /** @description Filter by workflow template name (partial match, case insensitive) */
